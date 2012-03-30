@@ -1,0 +1,15 @@
+Simple FASTCGI client
+====================
+This FASTCGI client executes a file given as an argument in php over fastcgi.
+The HTTP headers are hardcoded as an array in fcgi.c. Php fastcgi process has to
+be manually started(Using the script in bin). 
+
+The php-fastcgi script included was taken from nginx wikipage on fcgi
+http://wiki.nginx.org/FcgiExample
+
+Reference
+==========
+Nginx fastcgi module
+====================
+- Supports only a single request per connection (no request multiplexing).
+- Only FCGI_RESPONDER role is supported.

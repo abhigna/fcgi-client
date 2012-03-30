@@ -111,7 +111,7 @@ int fcgi_process_content(uchar **beg_buf, uchar *end_buf,
 
     if ( *state == fcgi_state_padding ){
         *state = fcgi_state_done;
-        printf("padding %d\n", (int)rec->length - (int)offset + (int)h->padding_len);
+        /*printf("padding %d\n", (int)rec->length - (int)offset + (int)h->padding_len);*/
         *beg_buf += (size_t) ((int)rec->length - (int)offset + (int)h->padding_len);
         return FCGI_PROCESS_DONE;
     }
@@ -124,42 +124,29 @@ int fcgi_process_content(uchar **beg_buf, uchar *end_buf,
     else
         cpy_len = nb;
 
-    switch(h->type){
-        case FCGI_STDOUT:
-        case FCGI_STDERR:
-        case FCGI_END_REQUEST:
-                memcpy(rec->content + offset, *beg_buf, cpy_len);
+    memcpy(rec->content + offset, *beg_buf, cpy_len);
 
-                if(tot_len <= nb)
-                {
-                    rec->offset += tot_len;
-                    *state = fcgi_state_done;
-                    *beg_buf += tot_len;
-                    return FCGI_PROCESS_DONE;
-                }
-                else if( con_len <= nb )
-                {
-                    /* Have to still skip all or some of padding */
-                    *state = fcgi_state_padding;
-                    rec->offset += nb;
-                    *beg_buf += nb;
-                    return FCGI_PROCESS_AGAIN;
-                }
-                else
-                {  
-                    rec->offset += nb;
-                    *beg_buf += nb;
-                    return FCGI_PROCESS_AGAIN;
-                }
-            break;
-        case FCGI_GET_VALUES_RESULT:
-            printf("hello");
-        case FCGI_UNKNOWN_TYPE:
-            printf("yo");
-            break;
+    if(tot_len <= nb)
+    {
+        rec->offset += tot_len;
+        *state = fcgi_state_done;
+        *beg_buf += tot_len;
+        return FCGI_PROCESS_DONE;
     }
-    /* Not reachable*/
-    *state = fcgi_state_done;
+    else if( con_len <= nb )
+    {
+        /* Have to still skip all or some of padding */
+        *state = fcgi_state_padding;
+        rec->offset += nb;
+        *beg_buf += nb;
+        return FCGI_PROCESS_AGAIN;
+    }
+    else
+    {  
+        rec->offset += nb;
+        *beg_buf += nb;
+        return FCGI_PROCESS_AGAIN;
+    }
     return 0;
 }
 
@@ -204,7 +191,7 @@ void fcgi_process_buffer(uchar *beg_buf, uchar *end_buf,
         }
 
        if( fcgi_process_record(&beg_buf, end_buf, h) == FCGI_PROCESS_DONE ){
-           /*printf("T%d\n", h->header->type);*/
+           /*fprintf(stderr, "TYPE%d:LEN:%d\n", h->header->type, h->length);*/
            if(h->header->type == FCGI_STDOUT)
                 for(i=0;i < h->length; i++)
                     fprintf(stdout, "%c", ((uchar *)h->content)[i]);

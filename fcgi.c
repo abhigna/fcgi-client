@@ -15,6 +15,37 @@
 #define FCGI_PORT "9000"
 #define MAXDATASIZE 1000
 
+#define N_NameValue 27
+fcgi_name_value nvs[N_NameValue] = {
+{"SCRIPT_FILENAME", "/home/abhigna/test.php"},
+{"SCRIPT_NAME", "/test.php"},
+{"DOCUMENT_ROOT", "/home/abhigna/"},
+{"REQUEST_URI", "/test.php"},
+{"PHP_SELF", "/test.php"},
+{"TERM", "linux"},
+{"PATH", ""},
+{"PHP_FCGI_CHILDREN", "2"},
+{"PHP_FCGI_MAX_REQUESTS", "1000"},
+{"FCGI_ROLE", "RESPONDER"},
+{"SERVER_SOFTWARE", "lighttpd/1.4.29"},
+{"SERVER_NAME", "SimpleServer"},
+{"GATEWAY_INTERFACE", "CGI/1.1"},
+{"SERVER_PORT", FCGI_PORT},
+{"SERVER_ADDR", FCGI_SERVER},
+{"REMOTE_PORT", ""},
+{"REMOTE_ADDR", "127.0.0.1"},
+{"PATH_INFO", "no value"},
+{"QUERY_STRING", "no value"},
+{"REQUEST_METHOD", "GET"},
+{"REDIRECT_STATUS", "200"},
+{"SERVER_PROTOCOL", "HTTP/1.1"},
+{"HTTP_HOST", "localhost:9000"},
+{"HTTP_CONNECTION", "keep-alive"},
+{"HTTP_USER_AGENT", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.83 Safari/535.11"},
+{"HTTP_ACCEPT", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
+{"HTTP_ACCEPT_LANGUAGE", "en-US,en;q=0.8"},
+};
+
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -27,7 +58,6 @@ int fcgi_connect(int *sock){
     int sockfd;//, numbytes;
     struct addrinfo hints, *servinfo, *p;
     int rv;
-    /*char s[INET6_ADDRSTRLEN], buf[MAXDATASIZE];*/
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -38,7 +68,6 @@ int fcgi_connect(int *sock){
         return 1;
     }
 
-    // loop through all the results and connect to the first we can
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                 p->ai_protocol)) == -1) {
@@ -60,59 +89,11 @@ int fcgi_connect(int *sock){
         return 2;
     }
 
-    /*inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),*/
-            /*s, sizeof s);*/
-    /*printf("client: connecting to %s\n", s);*/
-    freeaddrinfo(servinfo); // all done with this structure
+    freeaddrinfo(servinfo);
     *sock = sockfd;
-
-    /*if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {*/
-        /*perror("recv");*/
-        /*exit(1);*/
-    /*}*/
-
-    /*buf[numbytes] = '\0';*/
-
-    /*printf("client: received '%s'\n",buf);*/
-
-    /*close(sockfd);*/
-
     return 0;
 }
 
-#define N_NameValue 30
-fcgi_name_value nvs[N_NameValue] = {
-{"HOME", "/home/abhigna"},
-{"TERM", "linux"},
-{"PATH", "/opt/bin:/opt/sbin:/sbin:/bin:/usr/sbin:/usr/bin"},
-{"PWD", "/home/abhigna"},
-{"PHP_FCGI_CHILDREN", "2"},
-{"PHP_FCGI_MAX_REQUESTS", "1000"},
-{"FCGI_ROLE", "RESPONDER"},
-{"SERVER_SOFTWARE", "lighttpd/1.4.29"},
-{"SERVER_NAME", "ddwrt.lan"},
-{"GATEWAY_INTERFACE", "CGI/1.1"},
-{"SERVER_PORT", "8010"},
-{"SERVER_ADDR", "127.0.0.1"},
-{"REMOTE_PORT", "43485"},
-{"REMOTE_ADDR", "127.0.0.1"},
-{"SCRIPT_NAME", "/test.php"},
-{"PATH_INFO", "no value"},
-{"SCRIPT_FILENAME", "/home/abhigna/test.php"},
-{"DOCUMENT_ROOT", "/home/abhigna/"},
-{"REQUEST_URI", "/test.php"},
-{"QUERY_STRING", "no value"},
-{"REQUEST_METHOD", "GET"},
-{"REDIRECT_STATUS", "200"},
-{"SERVER_PROTOCOL", "HTTP/1.1"},
-{"HTTP_HOST", "ddwrt.lan:8010"},
-{"HTTP_CONNECTION", "keep-alive"},
-{"HTTP_USER_AGENT", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.83 Safari/535.11"},
-{"HTTP_ACCEPT", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
-{"HTTP_ACCEPT_LANGUAGE", "en-US,en;q=0.8"},
-{"PHP_SELF", "/test.php"},
-{"REQUEST_TIME", "1333010004"}
-};
 
 void simple_session_1(int sockfd){
     uint16_t req_id = 1;
@@ -190,8 +171,14 @@ void simple_session_1(int sockfd){
     }
 }
 
-int main(int argv, char **argc){
+int main(int argc, char **argv){
     int sockfd;
+    if( argc != 2){
+        printf("Usage: %s <Absolute path of file>\n", argv[0]);
+        return 0;
+    }
+    else
+        nvs[0].value = argv[1];
     fcgi_connect(&sockfd);
     simple_session_1(sockfd);
     close(sockfd);
