@@ -1,0 +1,6 @@
+Nginx fastcgi plugin
+====================
+- Supports only a single request per connection (no request multiplexing).
+- Only FCGI_RESPONDER role is supported.
+
+

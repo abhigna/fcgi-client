@@ -1,6 +1,11 @@
 #ifndef FCGI_DEFS_H
 #define FCGI_DEFS_H
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+
 #define FCGI_LISTENSOCK_FILENO 0
 #define FCGI_VERSION_1         1
 

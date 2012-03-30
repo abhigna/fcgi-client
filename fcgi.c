@@ -10,7 +10,7 @@
 
 #include <arpa/inet.h>
 
-#define BUF_SIZE 1024
+#define BUF_SIZE 5000
 #define FCGI_SERVER "127.0.0.1"
 #define FCGI_PORT "9000"
 #define MAXDATASIZE 1000
@@ -167,21 +167,27 @@ void simple_session_1(int sockfd){
             close(sockfd);
             return;
     }
-    while(1){
+    fcgi_record_list *rlst = NULL, *rec;
 
-    if ((nb = recv(sockfd, rbuf, BUF_SIZE-1, 0)) == -1) {
-        perror("recv");
-        exit(1);
-    }
+    while(1){
+        if ((nb = recv(sockfd, rbuf, BUF_SIZE-1, 0)) == -1) {
+            perror("recv");
+            exit(1);
+        }
         if(nb == 0)
             break;
-        for(i = 0; i< nb;i++)
-            printf("%c", rbuf[i]);
+        fcgi_process_buffer(rbuf, rbuf+(size_t)nb, &rlst);
+
     }
 
+    for(rec=rlst; rec!=NULL; rec=rec->next)
+    {
+        /*if(rec->header->type == FCGI_STDOUT)*/
+            /*printf("PADD<%d>", rec->header->padding_len);*/
+            /*printf("%d\n", rec->length);*/
+            /*for(i=0;i < rec->length; i++) fprintf(stdout, "%c", ((uchar *)rec->content)[i]);*/
 
-    /*printf("Received %d|", nb, rbuf);*/
-    print_bytes(rbuf, nb);
+    }
 }
 
 int main(int argv, char **argc){
